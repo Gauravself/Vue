@@ -1,7 +1,6 @@
 <template>
   <app-header />
 
-  <!-- Introduction -->
   <router-view></router-view>
 
   <!-- Player -->

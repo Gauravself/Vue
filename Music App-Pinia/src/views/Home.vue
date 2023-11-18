@@ -1,4 +1,5 @@
 <template>
+  <!-- Introduction -->
   <section class="mb-8 py-20 text-white text-center relative">
     <div
       class="absolute inset-0 w-full h-full bg-contain introduction-bg"
@@ -21,6 +22,7 @@
       src="assets/img/introduction-music.png"
     />
   </section>
+
   <!-- Main Content -->
   <section class="container mx-auto">
     <div class="bg-white rounded border border-gray-200 relative flex flex-col">
@@ -231,9 +233,3 @@
     </div>
   </section>
 </template>
-
-<script>
-export default {
-  name: "Home",
-};
-</script>
