@@ -48,17 +48,72 @@ export default {
   name: "Home",
   components: { SongItem },
   data() {
-    return { songs: [] };
+    return {
+      songs: [],
+      maxPerPage: 3,
+      pendingRequest: false,
+    };
   },
   async created() {
-    const snapshots = await songsCollection.get();
+    this.getSongs();
+    window.addEventListener("scroll", this.handleScroll);
+  },
+  beforeUnmount() {
+    window.removeEventListener("scroll", this.handleScroll);
+  },
+  methods: {
+    handleScroll() {
+      const { scrollTop, offsetHeight } = document.document;
+      const { innerHeight } = window;
 
-    snapshots.forEach((document) => {
-      this.songs.push({
-        docID: document.id,
-        ...document.data(),
+      const bottomOfWindow =
+        Math.round(scrollTop) + innerHeight === offsetHeight;
+
+      if (bottomOfWindow) {
+        //send api request
+        this.getSongs();
+      }
+    },
+    async getSongs() {
+      if (this.pendingRequest) {
+        return;
+      }
+      this.pendingRequest = true;
+      let snapshots;
+      if (this.songs.length) {
+        const lastDoc = await songsCollection
+          .doc(this.songs[this.songs.length - 1].docID)
+          .get();
+
+        snapshots = await songsCollection
+          .orderBy("modified_name")
+          .startAfter(lastDoc)
+          .limit(this.maxPerPage)
+          .get();
+      } else {
+        snapshots = await songsCollection
+          .orderBy("modified_name")
+          .limit(this.maxPerPage)
+          .get();
+      }
+
+      snapshots.forEach((document) => {
+        this.songs.push({
+          docID: document.id,
+          ...document.data(),
+        });
       });
-    });
+      this.pendingRequest = false;
+    },
   },
 };
 </script>
+
+<!-- Pagination using Infinite Scroll -->
+<!-- check properties such as offsetHeight -> height of whole page from document.document
+innerHeight -> height of component where pagination needs to applies from window
+scrolltop = offsetHeight - innerHeight -> height of unpaginated area from document.document
+
+
+If innerHeight + scrollTop = offsetHeight -> send request for more songs
+-->
